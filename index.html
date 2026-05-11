@@ -327,13 +327,68 @@ function drawStars() {
   }
 }
 
+function drawSun() {
+  const sx = W - 70;
+  const sy = 35;
+  // glow
+  cx.fillStyle = 'rgba(255,220,120,0.2)';
+  cx.beginPath();
+  cx.arc(sx, sy, 38, 0, Math.PI * 2);
+  cx.fill();
+
+  // sun
+  cx.fillStyle = '#ffcc33';
+  cx.beginPath();
+  cx.arc(sx, sy, 22, 0, Math.PI * 2);
+  cx.fill();
+
+  // shine
+  cx.fillStyle = '#fff2aa';
+  cx.beginPath();
+  cx.arc(sx - 7, sy - 7, 7, 0, Math.PI * 2);
+  cx.fill();
+
+  // rays
+  cx.strokeStyle = '#ffd966';
+  cx.lineWidth = 2;
+
+  for (let i = 0; i < 12; i++) {
+
+    const a = (Math.PI * 2 / 12) * i;
+
+    const x1 = sx + Math.cos(a) * 28;
+    const y1 = sy + Math.sin(a) * 28;
+
+    const x2 = sx + Math.cos(a) * 38;
+    const y2 = sy + Math.sin(a) * 38;
+
+    cx.beginPath();
+    cx.moveTo(x1, y1);
+    cx.lineTo(x2, y2);
+    cx.stroke();
+  }
+}
+
 function drawMoon() {
+  const sx = W - 70;
+  const sy = 35;
   cx.fillStyle = '#e8f0ff';
-  cx.beginPath(); cx.arc(W - 70, 35, 20, 0, Math.PI * 2); cx.fill();
+
+  cx.beginPath();
+  cx.arc(sx, sy, 20, 0, Math.PI * 2);
+  cx.fill();
+
   cx.fillStyle = '#001228';
-  cx.beginPath(); cx.arc(W - 62, 31, 17, 0, Math.PI * 2); cx.fill();
+
+  cx.beginPath();
+  cx.arc(sx - 8, sy - 4, 17, 0, Math.PI * 2);
+  cx.fill();
+
   cx.fillStyle = 'rgba(200,220,255,0.15)';
-  cx.beginPath(); cx.arc(W - 70, 35, 28, 0, Math.PI * 2); cx.fill();
+
+  cx.beginPath();
+  cx.arc(sx, sy, 28, 0, Math.PI * 2);
+  cx.fill();
 }
 
 function drawClouds() {
@@ -401,7 +456,7 @@ function drawDistantMountain() {
   cx.beginPath(); cx.moveTo(400, H*0.18); cx.lineTo(418, H*0.21); cx.lineTo(383, H*0.23); cx.closePath(); cx.fill();
 }
 
-// ── Surfer ────────────────────────────────────────────────────────────────
+// ── Surfer  ────────────────────────────────────────────────────────────────
 function drawSurfer() {
   // smooth board tilt
   p.boardAngle += (p.vy * 0.03 - p.boardAngle) * 0.15;
@@ -719,7 +774,8 @@ function coinHitCheck(c) {
 // ── Update ─────────────────────────────────────────────────────────────────
 function update() {
   if (state !== 'playing') return;
-  fr++; wt += 0.04; score += spd * 0.05;
+  fr++; wt += 0.04; 
+  // score += spd * 0.05;
   p.run++;
   level = 1 + Math.floor(score / 400);
   spd   = baseSpd + Math.floor(score / 400) * 0.7;
@@ -794,18 +850,32 @@ function update() {
 
   // coin collection — use dedicated coinHitCheck
   for (const c of coinArr) {
+
     if (c.got) continue;
+
     if (coinHitCheck(c)) {
+
       c.got = true;
-      combo++;
-      if (combo >= 10) multiplier = 3;
-      else if (combo >= 5) multiplier = 2;
-      else multiplier = 1;
-      const earned = multiplier * 10;
-      coins += multiplier;
-      score += earned;
-      floats.push({ x: c.x + c.w/2, y: c.y, txt: '+' + earned, life: 40 });
-      burst(c.x + c.w/2, c.y + c.h/2, 5, '#ffd700');
+
+      // every coin fixed value
+      coins += 1;
+      score += 10;
+
+      // popup text
+      floats.push({
+        x: c.x + c.w / 2,
+        y: c.y,
+        txt: '+10',
+        life: 40
+      });
+
+      burst(
+        c.x + c.w / 2,
+        c.y + c.h / 2,
+        5,
+        '#ffd700'
+      );
+
       upHUD();
     }
   }
@@ -828,7 +898,19 @@ function draw() {
 
   drawSky();
   drawStars();
+  // day/night cycle
+  // smooth day/night transition
+  const cycle = (Math.sin(fr * 0.002) + 1) / 2;
+
+  // day = stronger sun
+  cx.globalAlpha = cycle;
+  drawSun();
+
+  // night = stronger moon
+  cx.globalAlpha = 1 - cycle;
   drawMoon();
+
+  cx.globalAlpha = 1;
   drawClouds();
   drawDistantMountain();
   drawOcean();
