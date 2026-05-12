@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ocean Surf Run</title>
+<title>🏄‍♀️ Ocean Surf Run</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
@@ -44,6 +44,11 @@
     white-space: nowrap;
   }
   .hi b { color: #fff; margin-left: 3px; }
+
+  #hi-lives b { color: red; }
+  #hi-coins b { color: yellow; }
+  #hi-level b { color: #5aff44; }
+
   #spdWrap {
     display: flex;
     align-items: center;
@@ -124,9 +129,9 @@
   <div id="hud">
     <div class="hi">SCORE <b id="sc">0</b></div>
     <div class="hi">BEST <b id="bs">0</b></div>
-    <div class="hi">LIVES <b id="lv">♥♥♥♥♥</b></div>
-    <div class="hi">COINS <b id="cn">0</b></div>
-    <div class="hi">LVL <b id="lv2">1</b></div>
+    <div class="hi" id="hi-lives">LIVES <b id="lv">♥♥♥♥♥</b></div>
+    <div class="hi" id="hi-coins">COINS <b id="cn">0</b></div>
+    <div class="hi" id="hi-level">LVL <b id="lv2">1</b></div>
     <div id="spdWrap">
       <label>SPD <b id="sl">5</b></label>
       <input type="range" id="spdR" min="2" max="14" step="1" value="5">
@@ -617,42 +622,65 @@ function drawBarrel(o, ox, oy) {
   cx.fillRect(ox-2, oy+h*0.78, w+4, 4);
 }
 
-function drawCrab(o, ox, oy) {
-  const w = o.w, h = o.h;
-  cx.save(); cx.translate(0, Math.sin(fr*0.2)*2);
-  // body
-  cx.fillStyle = '#cc4400';
-  cx.beginPath(); cx.ellipse(ox+w/2,oy+h*0.6,w*0.45,h*0.38,0,0,Math.PI*2); cx.fill();
-  cx.fillStyle = '#ee6622';
-  cx.beginPath(); cx.ellipse(ox+w/2,oy+h*0.55,w*0.32,h*0.26,0,0,Math.PI*2); cx.fill();
-  // claws
-  [[-1,0.55],[1,0.55]].forEach(([s,yf]) => {
-    cx.strokeStyle='#bb3300'; cx.lineWidth=3; cx.lineCap='round';
+function drawCrab(o,ox,oy) {
+  const w=o.w,h=o.h;
+  const scuttle=Math.sin(fr*0.22)*3;
+  cx.save(); cx.translate(0,scuttle);
+  // shadow
+  cx.fillStyle='rgba(0,0,50,0.28)';
+  cx.beginPath(); cx.ellipse(ox+w*0.5,oy+h+5,w*0.46,5,0,0,Math.PI*2); cx.fill();
+  // legs (back row)
+  cx.strokeStyle='#992200'; cx.lineWidth=2.5; cx.lineCap='round';
+  [[-0.42,0.75],[0.42,0.75],[-0.32,0.88],[0.32,0.88]].forEach(([sx,sy])=>{
     cx.beginPath();
-    cx.moveTo(ox+w/2, oy+h*yf);
-    cx.lineTo(ox+w/2+s*w*0.55, oy+h*0.25);
-    cx.lineTo(ox+w/2+s*w*0.7,  oy+h*0.08);
+    cx.moveTo(ox+w*0.5+sx*w,oy+h*0.62);
+    cx.lineTo(ox+w*0.5+sx*w*1.45,oy+h*sy);
     cx.stroke();
-    cx.fillStyle='#bb3300';
+  });
+  // body
+  cx.fillStyle='#cc4400';
+  cx.beginPath(); cx.ellipse(ox+w/2,oy+h*0.6,w*0.46,h*0.4,0,0,Math.PI*2); cx.fill();
+  cx.fillStyle='#dd6622';
+  cx.beginPath(); cx.ellipse(ox+w/2,oy+h*0.55,w*0.34,h*0.28,0,0,Math.PI*2); cx.fill();
+  // shell texture
+  cx.strokeStyle='rgba(180,70,0,0.4)'; cx.lineWidth=1;
+  cx.beginPath(); cx.arc(ox+w*0.5,oy+h*0.52,w*0.22,0,Math.PI*2); cx.stroke();
+  cx.beginPath(); cx.arc(ox+w*0.5,oy+h*0.52,w*0.34,0,Math.PI*2); cx.stroke();
+  // claws
+  [[-1,0.54],[1,0.54]].forEach(([s])=>{
+    cx.strokeStyle='#aa3300'; cx.lineWidth=4; cx.lineCap='round';
     cx.beginPath();
-    cx.moveTo(ox+w/2+s*w*0.7,  oy+h*0.08);
-    cx.lineTo(ox+w/2+s*w*0.82, oy);
-    cx.lineTo(ox+w/2+s*w*0.75, oy+h*0.18);
+    cx.moveTo(ox+w*0.5,oy+h*0.54);
+    cx.lineTo(ox+w*0.5+s*w*0.52,oy+h*0.28);
+    cx.lineTo(ox+w*0.5+s*w*0.7,oy+h*0.1);
+    cx.stroke();
+    // claw pincers
+    cx.fillStyle='#993300';
+    cx.beginPath();
+    cx.moveTo(ox+w*0.5+s*w*0.7,oy+h*0.1);
+    cx.lineTo(ox+w*0.5+s*w*0.86,oy);
+    cx.lineTo(ox+w*0.5+s*w*0.78,oy+h*0.2);
+    cx.closePath(); cx.fill();
+    cx.beginPath();
+    cx.moveTo(ox+w*0.5+s*w*0.7,oy+h*0.1);
+    cx.lineTo(ox+w*0.5+s*w*0.84,oy+h*0.22);
+    cx.lineTo(ox+w*0.5+s*w*0.74,oy+h*0.28);
     cx.closePath(); cx.fill();
   });
-  // legs
-  [[-0.38,0.7],[0.38,0.7],[-0.28,0.85],[0.28,0.85]].forEach(([sx,sy]) => {
-    cx.strokeStyle='#aa3300'; cx.lineWidth=2;
-    cx.beginPath();
-    cx.moveTo(ox+w/2+sx*w,     oy+h*0.6);
-    cx.lineTo(ox+w/2+sx*w*1.5, oy+h*sy);
-    cx.stroke();
-  });
+  // eyestalks
+  cx.fillStyle='#cc4400';
+  cx.fillRect(ox+w*0.34,oy+h*0.38,3,8);
+  cx.fillRect(ox+w*0.63,oy+h*0.38,3,8);
   // eyes
-  cx.fillStyle='#ff2200'; cx.beginPath(); cx.arc(ox+w*0.38,oy+h*0.48,3,0,Math.PI*2); cx.fill();
-  cx.fillStyle='#ff2200'; cx.beginPath(); cx.arc(ox+w*0.62,oy+h*0.48,3,0,Math.PI*2); cx.fill();
-  cx.fillStyle='#fff';    cx.beginPath(); cx.arc(ox+w*0.39,oy+h*0.47,1.2,0,Math.PI*2); cx.fill();
-  cx.fillStyle='#fff';    cx.beginPath(); cx.arc(ox+w*0.63,oy+h*0.47,1.2,0,Math.PI*2); cx.fill();
+  cx.fillStyle='#ff2200';
+  cx.beginPath(); cx.arc(ox+w*0.355,oy+h*0.38,4.5,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(ox+w*0.645,oy+h*0.38,4.5,0,Math.PI*2); cx.fill();
+  cx.fillStyle='#111';
+  cx.beginPath(); cx.arc(ox+w*0.355,oy+h*0.37,2.2,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(ox+w*0.645,oy+h*0.37,2.2,0,Math.PI*2); cx.fill();
+  cx.fillStyle='#fff';
+  cx.beginPath(); cx.arc(ox+w*0.365,oy+h*0.365,1,0,Math.PI*2); cx.fill();
+  cx.beginPath(); cx.arc(ox+w*0.655,oy+h*0.365,1,0,Math.PI*2); cx.fill();
   cx.restore();
 }
 
